@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import json
+
+class Tachiyomi(list):
+  @staticmethod
+  def fromBackup(backup):
+    if backup["version"] != 2:
+      raise "Required backup version 2"
+    return Tachiyomi(backup["mangas"])
+  
+  def filter(self, callback):
+    return Tachiyomi(filter(callback, self))
+  
+  def filterCat(self, cat):
+    return self.filter(lambda v: cat in v["categories"])
+  
+  @property
+  def mangas(self):
+    return self.filterCat("Manga")
+  
+  @property
+  def webtoons(self):
+    return self.filterCat("Webtoon")
+  
+  @property
+  def reading(self):
+    return self.filterCat("Reading")
+  
+  @property
+  def ended(self):
+    return self.filterCat("Ended")
+
+  @property
+  def planned(self):
+    return self.filter(lambda v: "Reading" not in v["categories"] and "Ended" not in v["categories"])
+  
+  @property
+  def names(self):
+    return list(map(lambda v: v["manga"][1], self))
+  
+  @property
+  def json(self):
+    return {
+      "webtoon": {
+        "reading": self.webtoons.reading.names,
+        "ended": self.webtoons.ended.names,
+        "planned": self.webtoons.planned.names
+      },
+      "manga": {
+        "reading": self.mangas.reading.names,
+        "ended": self.mangas.ended.names,
+        "planned": self.mangas.planned.names
+      }
+    }
+
+
+backupDir = sys.argv[1] if len(sys.argv) > 1 else "."
+backupFile = sorted(os.listdir(backupDir)).pop()
+with open(os.path.join(backupDir, backupFile), "r") as f:
+  j = json.load(f)
+
+t = Tachiyomi.fromBackup(j)
+
+outFile = sys.argv[2] if len(sys.argv) > 2 else "tachiyomi.json"
+with open(outFile, "w") as f:
+  json.dump(t.json, f, indent=2)
