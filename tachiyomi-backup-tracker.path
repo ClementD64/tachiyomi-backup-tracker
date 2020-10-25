@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch Tachiyomi backup
+
+[Path]
+PathModified=/path/to/backup
+Unit=tachiyomi-backup-tracker.service
+
+[Install]
+WantedBy=multi-user.target

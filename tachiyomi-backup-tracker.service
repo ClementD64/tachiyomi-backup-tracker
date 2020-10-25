@@ -1,0 +1,7 @@
+[Unit]
+Description=Track library from Tachiyomi backup
+
+[Service]
+User=user
+Group=group
+ExecStart=/path/to/tachiyomi-backup-tracker /path/to/backup /path/to/out.json
